@@ -6,7 +6,7 @@
 #include <chrono>
 #include <string>
 #include "kdtree.h"
-
+#include <bits/stdc++.h> 
 // Arguments:
 // window is the region to draw box around
 // increase zoom to see more of the area
@@ -75,16 +75,36 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 
 }
 
+void proximity(const std::vector<float>& target, KdTree* tree, const float distanceTol, std::vector<int>& cluster, std::unordered_set<int>& processed_ids){
+	auto nearby_nodes = tree->search(target, distanceTol);
+	for(auto node : nearby_nodes){
+		const std::pair<std::unordered_set<int>::iterator , bool> res = processed_ids.insert(node->id);
+		if(res.second){
+			cluster.emplace_back(node->id);
+			proximity(node->point, tree, distanceTol, cluster, processed_ids);			
+		}			
+	}
+}
+
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
 
 	// TODO: Fill out this function to return list of indices for each cluster
-
 	std::vector<std::vector<int>> clusters;
- 
+	std::unordered_set<int> processed_ids;
+	for(int i=0; i<points.size(); i++){	
+		const std::pair<std::unordered_set<int>::iterator , bool> res = processed_ids.insert(i);			
+		if(res.second){
+			clusters.push_back({i});
+			processed_ids.insert(i);
+			proximity(points[i], tree, distanceTol, clusters.back(), processed_ids);
+		}
+	}
+
 	return clusters;
 
 }
+
 
 int main ()
 {
@@ -106,16 +126,18 @@ int main ()
 
 	KdTree* tree = new KdTree;
   
-    for (int i=0; i<points.size(); i++) 
-    	tree->insert(points[i],i); 
+    for (int i=0; i<points.size(); i++){
+		tree->insert(points[i],i); 
+	}
+    	
 
   	int it = 0;
   	render2DTree(tree->root,viewer,window, it);
   
   	std::cout << "Test Search" << std::endl;
-  	std::vector<int> nearby = tree->search({-6,7},3.0);
-  	for(int index : nearby)
-      std::cout << index << ",";
+  	std::vector<Node*> nearby = tree->search({-6,7},3.0);
+  	for(auto node : nearby)
+      std::cout << node->id << ",";
   	std::cout << std::endl;
 
   	// Time segmentation process

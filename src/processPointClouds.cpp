@@ -48,7 +48,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     typename pcl::PointCloud<PointT>::Ptr planeCloud(new typename pcl::PointCloud<PointT>());
 
     // Extract the inliers
-    pcl::ExtractIndices<pcl::PointXYZ> extract;
+    pcl::ExtractIndices<PointT> extract;
     extract.setInputCloud (cloud);
     extract.setIndices (inliers);
     extract.setNegative (false);
@@ -119,7 +119,7 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
     ec.extract (cluster_indices);
     
     for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-    {        
+    {          
         clusters.emplace_back(new typename pcl::PointCloud<PointT>()); 
         for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit)
             clusters.back()->points.push_back (cloud->points[*pit]); //*
@@ -169,19 +169,19 @@ BoxQ ProcessPointClouds<PointT>::BoundingBox(typename pcl::PointCloud<PointT>::P
     Eigen::Matrix4f projectionTransform(Eigen::Matrix4f::Identity());
     projectionTransform.block<3,3>(0,0) = eigenVectorsPCA.transpose();
     projectionTransform.block<3,1>(0,3) = -1.f * (projectionTransform.block<3,3>(0,0) * pcaCentroid.head<3>());
-    pcl::PointCloud<pcl::PointXYZ>::Ptr clusterProjected (new pcl::PointCloud<pcl::PointXYZ>);
+    typename pcl::PointCloud<PointT>::Ptr clusterProjected (new typename pcl::PointCloud<PointT>);
     pcl::transformPointCloud(*cluster, *clusterProjected, projectionTransform);
     // Get the minimum and maximum points of the transformed cloud.
-    pcl::PointXYZ minPoint, maxPoint;
+    PointT minPoint,maxPoint;
     pcl::getMinMax3D(*clusterProjected, minPoint, maxPoint);
-    const Eigen::Vector3f meanDiagonal = 0.5f*(maxPoint.getVector3fMap() + minPoint.getVector3fMap());
+    const Eigen::Vector4f meanDiagonal = 0.5f*(maxPoint.getVector4fMap() + minPoint.getVector4fMap());
 
 
 	Eigen::Quaternionf bboxQuaternion(eigenVectorsPCA);
 	               
     BoxQ box;
     box.bboxQuaternion = bboxQuaternion;
-    box.bboxTransform = eigenVectorsPCA * meanDiagonal + pcaCentroid.head<3>();
+    box.bboxTransform = eigenVectorsPCA * meanDiagonal.head<3>() + pcaCentroid.head<3>();
     box.cube_length = maxPoint.x - minPoint.x;
     box.cube_width  = maxPoint.y - minPoint.y;
     box.cube_height = maxPoint.z - minPoint.z;

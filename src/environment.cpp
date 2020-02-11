@@ -34,6 +34,38 @@ std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer
     return cars;
 }
 
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer)
+{
+    // ----------------------------------------------------
+    // -----Open 3D viewer and display City Block     -----
+    // ----------------------------------------------------
+
+    ProcessPointClouds<pcl::PointXYZI>* pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
+    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud = pointProcessorI->loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
+    //renderPointCloud(viewer,inputCloud,"inputCloud");
+
+
+    // TODO:: Create point processor
+    const int maxIteration = 1000;
+    const float threshold = 0.3; // distance from plane
+    ProcessPointClouds<pcl::PointXYZI> processPointCloud;
+    auto segmentedCloud = processPointCloud.SegmentPlane(inputCloud, maxIteration, threshold);
+
+    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = processPointCloud.Clustering(segmentedCloud.first, 0.5, 10, 5000);
+
+    renderPointCloud(viewer, segmentedCloud.second, "road", Color(0.5,0.5,0.5)); 
+
+    int clusterId = 0;
+    std::vector<Color> colors = {Color(1,0,0), Color(0,1,0), Color(0,0,1)};
+    for(pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters)
+    {
+        std::cout << "cluster size "; processPointCloud.numPoints(cluster);
+        auto box = processPointCloud.BoundingBox(cluster);
+        renderBox(viewer,box,clusterId);
+        renderPointCloud(viewer,cluster,"car"+std::to_string(clusterId),colors[clusterId%colors.size()]);
+        ++clusterId;
+    }
+}
 
 void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 {
@@ -111,7 +143,8 @@ int main (int argc, char** argv)
     pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
-    simpleHighway(viewer);
+    cityBlock(viewer);
+    //simpleHighway(viewer);
 
     while (!viewer->wasStopped ())
     {

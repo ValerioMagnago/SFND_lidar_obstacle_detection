@@ -27,7 +27,7 @@ After filtering segmentation divides the pointcloud into road and objects (non-r
   - return the plane which has more votes as road and define as road the points close to this plane. More time we iterate through these step higher is the probability to detect correctly the ground plane. For this project 100 iteration were found enough to guarantee good performance keeping fast computation (~ 3 ms). 
  
 ### Clustering
-Usually the road is the link joining the different object. Therefore by segmenting out the road from the LIDAR measure usually we can distinguish the different object extracting the cluster in the pointcloud. To identify the cluser a recursive Euclidean Clustering mechanism is implemented. To speed up the process that needs to loop several time through the points, the pointcloud was organized as a 3 dimensional KD-Tree, improving the initial linear complexity of the search process in logarithmic. The resulting clustering time is ~10 ms to detect 34 clusters.
+Usually the road is the link joining the different object. Therefore by segmenting out the road from the LIDAR measure usually we can distinguish the different object extracting the cluster in the pointcloud. To identify the cluster a recursive Euclidean Clustering mechanism is implemented. To speed up the process that needs to loop several time through the points, the pointcloud was organized as a 3 dimensional KD-Tree, improving the initial linear complexity of the search process in logarithmic. The resulting clustering time is ~10 ms to detect 34 clusters.
 
 ### Bounding Box 
 In order to fit each cluster in a bounding box with minimum volume a PCA (principal component analysis) based algorithm is implemented.

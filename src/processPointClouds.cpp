@@ -39,15 +39,13 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
     sor.setInputCloud (cloud);
     sor.setLeafSize (filterRes, filterRes, filterRes);
     sor.filter(*cloud_filtered);
-
-    std::cout << "POST" << cloud_filtered->size() << std::endl;
+    
     // Filter too far points
     pcl::CropBox<PointT> cropBox;
     cropBox.setInputCloud(cloud_filtered);
     cropBox.setMin(minPoint);
     cropBox.setMax(maxPoint);    
-    cropBox.filter(*cloud_filtered);
-    std::cout << "POSTTT" << cloud_filtered->size() << std::endl;
+    cropBox.filter(*cloud_filtered);    
     // Filter out part of the car
     pcl::CropBox<PointT> cropBoxCar;
     cropBoxCar.setInputCloud(cloud_filtered);

@@ -146,10 +146,13 @@ int main (int argc, char** argv)
     std::cout << "starting enviroment" << std::endl;
 
     pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
-    pcl::visualization::PCLVisualizer::Ptr viewer2 (new pcl::visualization::PCLVisualizer ("3D Viewer2"));
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
+
+#ifdef DOUBLE_VIEWER
+    pcl::visualization::PCLVisualizer::Ptr viewer2 (new pcl::visualization::PCLVisualizer ("3D Viewer2"));
     initCamera(setAngle, viewer2);
+#endif
 
     ProcessPointClouds<pcl::PointXYZI>* pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
     std::vector<boost::filesystem::path> stream = pointProcessorI->streamPcd("../src/sensors/data/pcd/data_1");
@@ -163,9 +166,11 @@ int main (int argc, char** argv)
     {
         // Clear viewer
         viewer->removeAllPointClouds();
-        viewer->removeAllShapes();  
+        viewer->removeAllShapes();
+#ifdef DOUBLE_VIEWER
         viewer2->removeAllPointClouds();
         viewer2->removeAllShapes();  
+#endif
         // Load pcd and run obstacle detection process
         inputCloudI = pointProcessorI->loadPcd((*streamIterator).string());
         //std::cout << "PRE" << inputCloudI->size() << std::endl;
@@ -176,8 +181,10 @@ int main (int argc, char** argv)
             streamIterator = stream.begin();
 
         viewer->spinOnce ();
+#ifdef DOUBLE_VIEWER
         viewer2->spinOnce ();
         sleep(0.1);
+#endif        
     } 
 }
 

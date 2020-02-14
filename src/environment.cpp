@@ -174,14 +174,14 @@ int main (int argc, char** argv)
         // Load pcd and run obstacle detection process
         inputCloudI = pointProcessorI->loadPcd((*streamIterator).string());
         //std::cout << "PRE" << inputCloudI->size() << std::endl;
-        cityBlock(viewer, pointProcessorI, inputCloudI);
-        renderPointCloud(viewer2,inputCloudI,"inputCloud");          
+        cityBlock(viewer, pointProcessorI, inputCloudI);        
         streamIterator++;
         if(streamIterator == stream.end())
             streamIterator = stream.begin();
 
         viewer->spinOnce ();
 #ifdef DOUBLE_VIEWER
+        renderPointCloud(viewer2,inputCloudI,"inputCloud");          
         viewer2->spinOnce ();
         sleep(0.1);
 #endif        
